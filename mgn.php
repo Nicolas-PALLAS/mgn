@@ -9,6 +9,11 @@ define('FRANCE_DEPARTMENTS_PATH', plugin_dir_path(__FILE__));
 define('FRANCE_DEPARTMENTS_URL', plugin_dir_url(__FILE__));
 define('FRANCE_DEPARTMENTS_BASENAME', plugin_basename(__FILE__));
 
+function fd_clear_transient() {
+    delete_transient('france_departments');
+}
+add_action('deactivate_mgn/mgn.php', 'fd_clear_transient');
+
 function fd_routes() {
     register_rest_route( 'mgn/v1', '/departments/', [
         'methods' => WP_REST_Server::READABLE,
