@@ -5,14 +5,18 @@ Description: Return a list of all departments in France
 Author: Nicolas PALLAS
 Version: 1.0
 */
-define('FRANCE_DEPARTMENTS_PATH', plugin_dir_path(__FILE__));
-define('FRANCE_DEPARTMENTS_URL', plugin_dir_url(__FILE__));
-define('FRANCE_DEPARTMENTS_BASENAME', plugin_basename(__FILE__));
+
+function fd_schedule_event() {
+    if (!wp_next_scheduled ('fd_get_france_departments')) {
+        wp_schedule_event(time(), 'weekly', 'fd_get_france_departments');
+    }
+}
+register_activation_hook(__FILE__, 'fd_schedule_event');
 
 function fd_clear_transient() {
     delete_transient('france_departments');
 }
-add_action('deactivate_mgn/mgn.php', 'fd_clear_transient');
+register_deactivation_hook(__FILE__, 'fd_clear_transient');
 
 function fd_routes() {
     register_rest_route( 'mgn/v1', '/departments/', [
@@ -29,13 +33,7 @@ function fd_get_france_departments(): WP_REST_Response {
     $france_departments = get_transient('france_departments');
 
     if (empty($france_departments)) {
-        $curl = new WP_Http_Curl();
-        $curl_response = $curl->request('https://geo.api.gouv.fr/departements', [
-            'filename' => '',
-            'stream' => false,
-            'decompress' => true,
-            'user-agent' => $_SERVER['HTTP_USER_AGENT'],
-        ]);
+        $curl_response = wp_remote_get('https://geo.api.gouv.fr/departements');
 
         if ($curl_response['response']['code'] === 200) {
             $france_departments = $curl_response['body'];
