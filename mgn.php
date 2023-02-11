@@ -22,6 +22,7 @@ function fd_routes() {
     register_rest_route( 'mgn/v1', '/departments/', [
         'methods' => WP_REST_Server::READABLE,
         'callback' => 'fd_get_france_departments',
+        'permission_callback' => '__return_true',
     ]);
 }
 add_action('rest_api_init', 'fd_routes');
